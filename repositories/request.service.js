@@ -64,9 +64,66 @@ async function deleteRequest(id) {
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
 }
 
+async function getClientRequestValue(client) {
+    const requests = await getRequests();
+    const request = requests.filter(req => req.cliente === client && req.entregue === true);
+    let total = 0;
+
+    if(Object.keys(request).length === 0) {
+        throw new Error('Cliente não encontrado..');
+    }
+
+    Object.keys(request).forEach(key => {
+        total += request[key].valor;
+    });
+
+    return `Total: R$ ${total}`;
+}
+
+async function getOrderRequestValue(order) {
+    const requests = await getRequests();
+    const request = requests.filter(req => req.produto === order && req.entregue === true);
+    let total = 0;
+
+    if(Object.keys(request).length === 0) {
+        throw new Error('Cliente não encontrado..');
+    }
+
+    Object.keys(request).forEach(key => {
+        total += request[key].valor;
+    });
+
+    return `Total de ${order}: R$ ${total}`;
+}
+
+async function getValueableRequest() {
+    const requests = await getRequests();
+    const request = requests.filter(req => req.entregue !== false);
+    let result = {};
+
+    for(let i = 0; i < request.length; i++) {
+        let produto = request[i].produto;
+
+        if(produto in result) {
+            result[produto] += 1;
+        } else {
+            result[produto] = 1;
+        }
+    }
+
+    const list_product = Object.fromEntries(
+        Object.entries(result).sort(([,a],[,b]) => b-a)
+    );
+
+    return list_product;
+}
+
 export default {
     insertRequest,
     updateRequest,
     getRequest,
     deleteRequest,
+    getClientRequestValue,
+    getOrderRequestValue,
+    getValueableRequest
 }
